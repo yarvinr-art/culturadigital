@@ -24,13 +24,13 @@ h1,h2,h3{font-family:'Sora',sans-serif}
 
 /* ---------- Cabecera ---------- */
 header{background:linear-gradient(135deg,#1B1F3B 0%,#312E81 60%,#4338CA 100%);color:#fff;padding:26px 0 22px;position:relative;overflow:hidden}
-header::after{content:"🎲";position:absolute;right:-10px;top:-18px;font-size:120px;opacity:.10;transform:rotate(15deg)}
+header::after{content:"🎲";position:absolute;right:-10px;top:-18px;font-size:120px;opacity:.10;transform:rotate(15deg);pointer-events:none}
 .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:600}
 header h1{font-size:clamp(20px,4vw,30px);margin:6px 0 4px}
 header p{opacity:.9;font-size:14px;max-width:600px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:3px 10px;border-radius:99px;font-size:12px}
-#btnDocente{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;font-weight:600}
+#btnDocente{position:absolute;top:14px;right:16px;z-index:5;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;font-weight:600}
 #btnDocente:hover{background:rgba(255,255,255,.25)}
 
 /* ---------- Barra de progreso ---------- */
@@ -539,7 +539,19 @@ async function enviarFicha(){
     btn.textContent = "✅ Enviada correctamente";
   }catch(err){
     console.error(err);
-    toast("❌ Error al enviar. Verifica tu conexión e intenta de nuevo.");
+    let msg = "❌ Error al enviar. Verifica tu conexión e intenta de nuevo.";
+    const code = (err && (err.code || err.message)) || "";
+    if(code.includes("admin-restricted-operation") || code.includes("operation-not-allowed")){
+      msg = "❌ Falta habilitar el acceso ANÓNIMO en Firebase Authentication.";
+    }else if(code.includes("permission-denied") || code.includes("Missing or insufficient")){
+      msg = "❌ Las reglas de Firestore no permiten crear. Revisa las reglas.";
+    }else if(code.includes("not-found") || code.includes("NOT_FOUND")){
+      msg = "❌ La base de datos Firestore aún no fue creada en el proyecto.";
+    }else if(code.includes("unavailable") || code.includes("network")){
+      msg = "❌ Sin conexión a internet. Intenta de nuevo.";
+    }
+    toast(msg);
+    alert(msg + "\n\nDetalle técnico: " + code);
     btn.disabled = false; btn.textContent = "📤 Enviar mi hoja de trabajo";
   }
 }
@@ -554,12 +566,29 @@ function abrirLoginDocente(){
   $("modalLogin").classList.add("abierto");
 }
 async function loginDocente(){
+  const email = $("logEmail").value.trim(), pass = $("logPass").value;
+  if(!email || !pass){ toast("⚠️ Escribe correo y contraseña"); return; }
   try{
-    await auth.signInWithEmailAndPassword($("logEmail").value.trim(), $("logPass").value);
+    await auth.signInWithEmailAndPassword(email, pass);
     $("modalLogin").classList.remove("abierto");
     mostrarPanel();
-  }catch(e){ toast("❌ Correo o contraseña incorrectos"); }
+  }catch(e){
+    console.error(e);
+    const code = (e && e.code) || "";
+    let msg = "❌ No se pudo iniciar sesión.";
+    if(code.includes("operation-not-allowed")) msg = "❌ Falta habilitar Correo/contraseña en Authentication.";
+    else if(code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) msg = "❌ Correo o contraseña incorrectos.";
+    else if(code.includes("invalid-email")) msg = "❌ El correo no tiene formato válido.";
+    else if(code.includes("too-many-requests")) msg = "❌ Demasiados intentos. Espera unos minutos.";
+    else if(code.includes("network")) msg = "❌ Sin conexión a internet.";
+    toast(msg);
+    alert(msg + "\n\nDetalle técnico: " + code);
+  }
 }
+// Permitir ingresar con Enter desde el modal
+["logEmail","logPass"].forEach(id=>{
+  $(id).addEventListener("keydown", e=>{ if(e.key==="Enter") loginDocente(); });
+});
 function cerrarSesionDocente(){
   auth.signOut();
   $("vistaDocente").style.display = "none";
