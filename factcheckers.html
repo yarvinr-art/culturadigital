@@ -149,7 +149,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
     <h1>Fact-Checkers: Detectives de la verdad digital 🕵️</h1>
     <p>Aprende a detectar noticias falsas, verifica con el semáforo y resuelve los casos del reto en equipo.</p>
     <div class="badges">
-      <span class="badge">Competencia 28 · Cultura Digital</span><span class="badge">3.° Secundaria</span><span class="badge">Trabajo en parejas / equipos</span>
+      <span class="badge">Competencia 28 · Cultura Digital</span><span class="badge">3.° Secundaria</span><span class="badge">Trabajo individual</span>
     </div>
   </div>
   <button id="btnDocente" onclick="abrirLoginDocente()">👨‍🏫 Docente</button>
@@ -169,9 +169,9 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
 
   <!-- Datos -->
   <div class="card">
-    <div class="act-head"><div class="act-num">👥</div><h2>Datos del equipo</h2></div>
+    <div class="act-head"><div class="act-num">👤</div><h2>Mis datos</h2></div>
     <div class="grid3">
-      <div><label>Integrantes (apellidos y nombres)</label><input type="text" id="f_equipo" placeholder="Ej.: Quispe Rojas, Ana / Torres Díaz, Luis"></div>
+      <div><label>Apellidos y nombres</label><input type="text" id="f_equipo" placeholder="Ej.: Quispe Rojas, Ana"></div>
       <div><label>Grado y sección</label>
         <select id="f_seccion">
           <option value="">Selecciona…</option>
@@ -185,7 +185,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
   <!-- FICHA 1 -->
   <div class="card">
     <div class="act-head"><div class="act-num">1</div><h2>Clasifica la trampa</h2></div>
-    <div class="act-sub">En parejas: lean cada ejemplo y clasifíquenlo. <b>Tipos:</b> ERRÓNEA (falsa, sin intención de dañar) · DESINFORMACIÓN (creada para engañar) · MALICIOSA (información real usada para dañar).</div>
+    <div class="act-sub">Lee cada ejemplo y clasifícalo. <b>Tipos:</b> ERRÓNEA (falsa, sin intención de dañar) · DESINFORMACIÓN (creada para engañar) · MALICIOSA (información real usada para dañar).</div>
     <div id="trampas"></div>
   </div>
 
@@ -193,8 +193,15 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
   <div class="card">
     <div class="act-head"><div class="act-num">2</div><h2>Semáforo de Verificación</h2></div>
     <div class="regla-oro">⭐ <b>Regla de oro:</b> si la mayoría está en ÁMBAR o ROJO… ¡no compartas!</div>
-    <label>Contenido que estoy verificando</label>
-    <input type="text" id="f2_contenido" data-track placeholder="Describe la noticia, imagen o mensaje que verificas…">
+    <label>📱 Contenido que vas a verificar (llegó reenviado a tu WhatsApp):</label>
+    <div style="background:#E7FFDB;border:1.5px solid #B9E8A6;border-radius:12px;padding:14px 16px;margin-top:4px;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+      <div style="font-size:11.5px;color:#5B7A50;font-weight:700;margin-bottom:6px">↪️ Reenviado muchas veces</div>
+      <div>🚨 <b>URGENTE COMPARTE!!</b> Científicos confirman que beber agua helada después de almorzar «congela» la grasa de los alimentos y puede causar un INFARTO 💔. Los médicos no quieren que lo sepas. ¡¡Reenvía a 10 familiares antes de que lo borren!! 🙏🙏</div>
+      <div style="font-size:11.5px;color:#5B7A50;margin-top:8px">enviado por: +51 9** *** *** · sin fuente · sin fecha</div>
+    </div>
+    <label>🔎 ¿Qué elementos sospechosos observas en este mensaje?</label>
+    <textarea id="f2_obs" data-track placeholder="Ej.: usa mayúsculas y urgencia, no menciona qué científicos…"></textarea>
+    <label style="margin-top:14px">Ahora evalúa el mensaje con cada criterio del semáforo:</label>
     <div id="criterios" style="margin-top:8px"></div>
     <label style="margin-top:16px">🚦 Mi semáforo final</label>
     <div class="ver-opts" id="semFinal">
@@ -208,7 +215,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
   <!-- FICHA 3 -->
   <div class="card">
     <div class="act-head"><div class="act-num">3</div><h2>Casos del Reto Fact-Checker</h2></div>
-    <div class="act-sub">Analicen los 3 casos con el Semáforo de Verificación. El veredicto de cada caso lo registrarán en la Ficha 4.</div>
+    <div class="act-sub">Analiza los 3 casos aplicando lo aprendido con el Semáforo. El veredicto de cada caso lo registrarás en la Ficha 4.</div>
     <div class="caso a"><b>CASO A — Noticia web</b>Titular: «URGENTE: Ministerio confirma que el próximo año escolar empezará recién en mayo». Publicado en «noticias-peru-hoy24.com», sin autor, con fecha de hace 3 años y varios errores ortográficos. Pide compartir «antes de que lo borren».</div>
     <div class="caso b"><b>CASO B — Cadena de WhatsApp</b>«AVISO!! Están regalando becas completas de estudio, solo ingresa tus datos y tu DNI en: beca-gratis-2026.xyz. Cupos limitados, reenvía a 10 contactos».</div>
     <div class="caso c"><b>CASO C — Imagen viral</b>Fotografía impactante de una inundación con el texto «Así quedó Lima ANOCHE». La búsqueda inversa muestra que la foto es de hace varios años… y de otro país.</div>
@@ -224,8 +231,8 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
 
   <!-- FICHA 4 -->
   <div class="card">
-    <div class="act-head"><div class="act-num">4</div><h2>Veredicto del equipo</h2></div>
-    <div class="act-sub">Completen el veredicto de cada caso con sus evidencias y las herramientas que usaron.</div>
+    <div class="act-head"><div class="act-num">4</div><h2>Mi veredicto como fact-checker</h2></div>
+    <div class="act-sub">Relee cada caso y decide tu veredicto. Las <b>evidencias</b> son las pistas sospechosas que encuentras en el propio caso (ej.: no tiene autor, la fecha es antigua, el dominio es extraño, pide reenviar con urgencia). Luego marca las herramientas del kit que te permitirían comprobarlo.</div>
     <div id="veredictos"></div>
   </div>
 
@@ -246,8 +253,8 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
   </div>
 
   <div class="card" style="background:linear-gradient(135deg,#0B2530,#0E7490);border:none">
-    <button class="btn btn-primary" id="btnEnviar" style="background:#fff;color:var(--primary)" onclick="enviarFicha()">📤 Enviar nuestras fichas</button>
-    <div class="aviso-borrador" style="color:rgba(255,255,255,.85)">Las respuestas se guardan automáticamente como borrador en este equipo. Solo se envían al docente al presionar el botón.</div>
+    <button class="btn btn-primary" id="btnEnviar" style="background:#fff;color:var(--primary)" onclick="enviarFicha()">📤 Enviar mis fichas</button>
+    <div class="aviso-borrador" style="color:rgba(255,255,255,.85)">Tus respuestas se guardan automáticamente como borrador en esta computadora. Solo se envían al docente al presionar el botón.</div>
   </div>
 </div>
 </div>
@@ -264,19 +271,19 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Equipos recibidos</div></div>
+    <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Fichas recibidas</div></div>
     <div class="stat"><div class="n" id="stHoy">0</div><div class="l">Enviados hoy</div></div>
   </div>
 
   <div class="filtros">
     <select id="filtroSeccion" onchange="renderTabla()"><option value="">Todas las secciones</option></select>
-    <input type="text" id="filtroNombre" placeholder="Buscar equipo…" oninput="renderTabla()">
+    <input type="text" id="filtroNombre" placeholder="Buscar estudiante…" oninput="renderTabla()">
     <button class="btn btn-sec" onclick="cargarFichas()">🔄 Actualizar</button>
   </div>
 
   <div class="tabla-scroll">
   <table>
-    <thead><tr><th>Equipo</th><th>Sección</th><th>Enviado</th><th>F1: Tipos</th><th>F4: Veredictos</th><th>Nota</th><th></th></tr></thead>
+    <thead><tr><th>Estudiante</th><th>Sección</th><th>Enviado</th><th>F1: Tipos</th><th>F4: Veredictos</th><th>Nota</th><th></th></tr></thead>
     <tbody id="tbodyFichas"><tr><td colspan="7" style="text-align:center;color:var(--muted)">Cargando…</td></tr></tbody>
   </table>
   </div>
@@ -308,7 +315,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px
 <!-- Modal de nota instantánea -->
 <div class="modal-bg" id="modalNota">
   <div class="modal" style="text-align:center;max-width:430px">
-    <div style="font-size:14px;color:var(--muted);font-weight:600">🕵️ Resultado del equipo</div>
+    <div style="font-size:14px;color:var(--muted);font-weight:600">🕵️ Tu resultado</div>
     <div id="notaLetra" style="font-family:'Sora';font-size:64px;font-weight:800;line-height:1.1;margin:8px 0 2px"></div>
     <div id="notaDesc" style="font-family:'Sora';font-size:16px;font-weight:700;margin-bottom:14px"></div>
     <div id="notaDetalle" style="text-align:left;font-size:14px"></div>
@@ -330,9 +337,15 @@ const firebaseConfig = {
   appId: "1:460468749158:web:c9aca33d5b348fac11bea7"
 };
 const COLECCION = "fichas_factcheckers";
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+let db = null, auth = null, firebaseOk = false;
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  auth = firebase.auth();
+  firebaseOk = true;
+}catch(e){
+  console.error("Firebase no pudo cargar:", e);
+}
 
 /* ============ DATOS DEL TALLER ============ */
 const TIPOS = ["ERRÓNEA","DESINFORMACIÓN","MALICIOSA"];
@@ -355,6 +368,11 @@ const CRITERIOS = [
   "¿Un verificador ya lo revisó? ¿Qué concluyó?",
 ];
 const CASOS = ["A","B","C"];
+const CASOS_RESUMEN = {
+  A: "📰 Noticia web: «URGENTE: el año escolar empezará recién en mayo» — sitio desconocido, sin autor, fecha de hace 3 años.",
+  B: "💬 Cadena de WhatsApp: «Becas gratis, ingresa tu DNI en beca-gratis-2026.xyz, reenvía a 10 contactos».",
+  C: "🖼️ Imagen viral: foto de inundación «Así quedó Lima ANOCHE» — la búsqueda inversa muestra que es antigua y de otro país.",
+};
 const VEREDICTOS = ["VERDADERO","FALSO","ENGAÑOSO / FUERA DE CONTEXTO"];
 const VER_OK = {A:["FALSO","ENGAÑOSO / FUERA DE CONTEXTO"], B:["FALSO"], C:["ENGAÑOSO / FUERA DE CONTEXTO"]};
 const HERRAMIENTAS = ["Lectura lateral","Búsqueda inversa","Verificadores","Fuente/autor/fecha"];
@@ -411,10 +429,11 @@ CASOS.forEach(c=>{
   const div = document.createElement("div");
   div.className = "veredicto-box";
   div.innerHTML = `<h3>CASO ${c}</h3>
+    <div style="font-size:13px;color:var(--muted);background:#F6FAFB;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-bottom:8px">${CASOS_RESUMEN[c]}</div>
     <label style="margin-top:0">Veredicto</label>
     <div class="ver-opts" id="f4_ver_${c}">${VEREDICTOS.map(v=>`<button onclick="setVer('${c}','${v.replace(/'/g,"\\'")}',this)">${v}</button>`).join("")}</div>
-    <label>Evidencia 1</label><input type="text" id="f4_e1_${c}" data-track>
-    <label>Evidencia 2</label><input type="text" id="f4_e2_${c}" data-track>
+    <label>Evidencia 1 (pista que encontraste en el caso)</label><input type="text" id="f4_e1_${c}" data-track placeholder="Ej.: no menciona ningún autor…">
+    <label>Evidencia 2 (otra pista distinta)</label><input type="text" id="f4_e2_${c}" data-track placeholder="Ej.: la fecha no coincide con el hecho…">
     <label>Herramientas usadas</label>
     <div class="herr">${HERRAMIENTAS.map((h,j)=>`<label id="f4_hl_${c}${j}"><input type="checkbox" id="f4_h_${c}${j}" data-track>${h}</label>`).join("")}</div>`;
   contV.appendChild(div);
@@ -441,7 +460,7 @@ const CLAVE_BORRADOR = "borrador_factcheckers_v1";
 const camposTexto = ()=>[...document.querySelectorAll("[data-track]")];
 
 function guardarBorrador(){
-  const data = {campos:{}, sem:semResp, semFinal, ver:verResp, equipo:$("f_equipo").value, seccion:$("f_seccion").value, fecha:$("f_fecha").value};
+  const data = {campos:{}, sem:semResp, semFinal, ver:verResp, nombre:$("f_equipo").value, seccion:$("f_seccion").value, fecha:$("f_fecha").value};
   camposTexto().forEach(el=>{ data.campos[el.id] = el.type==="checkbox" ? el.checked : el.value; });
   localStorage.setItem(CLAVE_BORRADOR, JSON.stringify(data));
 }
@@ -449,7 +468,7 @@ function cargarBorrador(){
   try{
     const raw = localStorage.getItem(CLAVE_BORRADOR); if(!raw) return;
     const d = JSON.parse(raw);
-    $("f_equipo").value = d.equipo||""; $("f_seccion").value = d.seccion||""; if(d.fecha) $("f_fecha").value = d.fecha;
+    $("f_equipo").value = d.nombre||d.equipo||""; $("f_seccion").value = d.seccion||""; if(d.fecha) $("f_fecha").value = d.fecha;
     Object.entries(d.campos||{}).forEach(([id,v])=>{
       const el = $(id); if(!el) return;
       if(el.type==="checkbox"){ el.checked = v; if(v){ const lab = $(id.replace("f4_h_","f4_hl_")); lab?.classList.add("marcada"); } }
@@ -492,10 +511,10 @@ cargarBorrador(); actualizarProgreso();
 
 /* ============ CÁLCULO DE NOTA (AD / A / B / C) ============ */
 const NOTAS = {
-  AD: {desc:"Logro destacado", color:"#0E7490", msg:"¡Excelente trabajo, detectives! Dominan la verificación de información."},
-  A:  {desc:"Logro esperado", color:"#15803D", msg:"¡Muy bien! Lograron lo esperado. Revisen los puntos marcados para llegar a AD."},
-  B:  {desc:"En proceso", color:"#B45309", msg:"Van por buen camino, pero hay respuestas por mejorar o completar."},
-  C:  {desc:"En inicio", color:"#B91C1C", msg:"Necesitan reforzar el tema. Revisen el kit del detective y vuelvan a intentarlo."},
+  AD: {desc:"Logro destacado", color:"#0E7490", msg:"¡Excelente trabajo, detective! Dominas la verificación de información."},
+  A:  {desc:"Logro esperado", color:"#15803D", msg:"¡Muy bien! Lograste lo esperado. Revisa los puntos marcados para llegar a AD."},
+  B:  {desc:"En proceso", color:"#B45309", msg:"Vas por buen camino, pero hay respuestas por mejorar o completar."},
+  C:  {desc:"En inicio", color:"#B91C1C", msg:"Necesitas reforzar el tema. Revisa el kit del detective y vuelve a intentarlo."},
 };
 function calcNota(f){
   // Aciertos en las partes autocorregibles (F1 tipos + F4 veredictos)
@@ -510,7 +529,7 @@ function calcNota(f){
   let llenos = 0, total = 0;
   const cuenta = v => { total++; if(v && String(v).trim()!=="") llenos++; };
   (f.f1||[]).forEach(r=>{ cuenta(r.tipo); cuenta(r.disfraz); cuenta(r.emocion); });
-  cuenta(f.f2?.contenido);
+  cuenta(f.f2?.observaciones ?? f.f2?.contenido);
   (f.f2?.criterios||[]).forEach(c=>cuenta(c));
   cuenta(f.f2?.final);
   ["q1","q2","q3","q4"].forEach(k=>cuenta(f.f3?.[k]));
@@ -548,20 +567,21 @@ function toast(msg){
 }
 
 async function enviarFicha(){
-  const equipo = $("f_equipo").value.trim();
+  const nombre = $("f_equipo").value.trim();
   const seccion = $("f_seccion").value;
-  if(!equipo || !seccion){ toast("⚠️ Escriban los integrantes y elijan su sección"); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(!nombre || !seccion){ toast("⚠️ Escribe tus apellidos y nombres y elige tu sección"); window.scrollTo({top:0,behavior:"smooth"}); return; }
 
+  if(!firebaseOk){ alert("❌ No hay conexión con el servidor (Firebase no cargó). Verifica el internet y recarga la página. Tus respuestas están guardadas como borrador."); return; }
   const btn = $("btnEnviar");
   btn.disabled = true; btn.textContent = "Enviando…";
   try{
     if(!auth.currentUser) await auth.signInAnonymously();
     const ficha = {
-      equipo, seccion,
+      nombre, seccion,
       fecha: $("f_fecha").value,
       enviado: firebase.firestore.FieldValue.serverTimestamp(),
       f1: TRAMPAS.map((tr,i)=>({tipo:$("f1_tipo"+i).value, disfraz:$("f1_dis"+i).value, emocion:$("f1_emo"+i).value})),
-      f2: {contenido:$("f2_contenido").value, criterios:CRITERIOS.map((c,i)=>semResp[i]||""), final:semFinal},
+      f2: {contenido:"Cadena viral: agua helada después de almorzar causa infartos", observaciones:$("f2_obs").value, criterios:CRITERIOS.map((c,i)=>semResp[i]||""), final:semFinal},
       f3: {q1:$("f3_q1").value, q2:$("f3_q2").value, q3:$("f3_q3").value, q4:$("f3_q4").value},
       f4: Object.fromEntries(CASOS.map(c=>[c,{
         veredicto: verResp[c]||"",
@@ -593,6 +613,7 @@ async function enviarFicha(){
 let fichas = [];
 
 function abrirLoginDocente(){
+  if(!firebaseOk){ alert("❌ No hay conexión con el servidor (Firebase no cargó). Verifica el internet y recarga la página."); return; }
   if(auth.currentUser && !auth.currentUser.isAnonymous){ mostrarPanel(); return; }
   $("modalLogin").classList.add("abierto");
 }
@@ -668,7 +689,7 @@ function fmtFecha(ts){
 function renderTabla(){
   const fs = $("filtroSeccion").value;
   const fn = $("filtroNombre").value.trim().toLowerCase();
-  const lista = fichas.filter(f => (!fs || f.seccion===fs) && (!fn || (f.equipo||"").toLowerCase().includes(fn)));
+  const lista = fichas.filter(f => (!fs || f.seccion===fs) && (!fn || ((f.nombre||f.equipo||"")).toLowerCase().includes(fn)));
 
   $("stTotal").textContent = fichas.length;
   const hoy = new Date().toDateString();
@@ -680,7 +701,7 @@ function renderTabla(){
   }
   $("tbodyFichas").innerHTML = lista.map(f=>`
     <tr class="fila" onclick="verDetalle('${f.id}')">
-      <td><b>${escHTML(f.equipo)||"—"}</b></td>
+      <td><b>${escHTML(f.nombre||f.equipo)||"—"}</b></td>
       <td>${escHTML(f.seccion)||"—"}</td>
       <td>${fmtFecha(f.enviado)}</td>
       <td><span class="pill ok">${puntajeF1(f)}</span></td>
@@ -704,7 +725,7 @@ function semChip(v){
 function verDetalle(id){
   const f = fichas.find(x=>x.id===id); if(!f) return;
   const nd = notaDe(f);
-  $("detNombre").innerHTML = `${escHTML(f.equipo)} · ${escHTML(f.seccion)} &nbsp; ${pillNota(nd)} <span style="font-size:13px;color:var(--muted);font-weight:400">(${NOTAS[nd.letra].desc} · completitud ${nd.completitud}%)</span>`;
+  $("detNombre").innerHTML = `${escHTML(f.nombre||f.equipo)} · ${escHTML(f.seccion)} &nbsp; ${pillNota(nd)} <span style="font-size:13px;color:var(--muted);font-weight:400">(${NOTAS[nd.letra].desc} · completitud ${nd.completitud}%)</span>`;
   let h = "";
 
   h += `<div class="det-sec"><h3>1️⃣ Clasifica la trampa <span class="pill ok">${puntajeF1(f)}</span></h3>`;
@@ -717,7 +738,8 @@ function verDetalle(id){
   h += `</div>`;
 
   h += `<div class="det-sec"><h3>2️⃣ Semáforo de Verificación</h3>
-    ${bloqueA("Contenido verificado", esc(f.f2?.contenido))}`;
+    ${bloqueA("Contenido verificado", esc(f.f2?.contenido))}
+    ${bloqueA("Elementos sospechosos que observó", esc(f.f2?.observaciones))}`;
   CRITERIOS.forEach((c,i)=>{
     h += `<div class="det-a" style="margin-top:6px">${c} ${semChip(f.f2?.criterios?.[i])}</div>`;
   });
@@ -752,7 +774,7 @@ function verDetalle(id){
 }
 
 async function borrarFicha(id){
-  if(!confirm("¿Eliminar esta ficha de equipo? Esta acción no se puede deshacer.")) return;
+  if(!confirm("¿Eliminar esta ficha? Esta acción no se puede deshacer.")) return;
   try{
     await db.collection(COLECCION).doc(id).delete();
     fichas = fichas.filter(f=>f.id!==id);
@@ -766,7 +788,7 @@ function exportarExcel(){
   if(!fichas.length){ toast("No hay fichas para exportar"); return; }
   const filas = fichas.map(f=>{
     const fila = {
-      "Equipo": f.equipo, "Sección": f.seccion, "Fecha": f.fecha,
+      "Estudiante": f.nombre||f.equipo||"", "Sección": f.seccion, "Fecha": f.fecha,
       "Enviado": f.enviado?.toDate ? f.enviado.toDate().toLocaleString("es-PE") : "",
       "F1: Puntaje tipos": puntajeF1(f),
     };
@@ -775,6 +797,7 @@ function exportarExcel(){
       fila[`F1.${i+1} Tipo`] = r.tipo||""; fila[`F1.${i+1} Disfraz`] = r.disfraz||""; fila[`F1.${i+1} Emoción`] = r.emocion||"";
     });
     fila["F2: Contenido verificado"] = f.f2?.contenido||"";
+    fila["F2: Elementos sospechosos"] = f.f2?.observaciones||"";
     fila["F2: Criterios (7)"] = (f.f2?.criterios||[]).join(" | ");
     fila["F2: Semáforo final"] = f.f2?.final||"";
     fila["F3: Criterios que fallan"] = f.f3?.q1||""; fila["F3: Herramienta clave"] = f.f3?.q2||"";
