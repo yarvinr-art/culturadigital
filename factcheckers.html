@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fact-Checkers: Detectives de la verdad digital | AIP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#F3F7F8; --card:#FFFFFF; --ink:#12313B; --muted:#54707A;
+  --primary:#0E7490; --primary-soft:#E3F3F7; --accent:#F59E0B; --accent-soft:#FFF7E8;
+  --ok:#15803D; --ok-soft:#E9F7EE; --amb:#B45309; --amb-soft:#FFF3DE;
+  --rojo:#B91C1C; --rojo-soft:#FDEAEA; --danger:#DC2626;
+  --line:#DDE7EA; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;padding-bottom:70px}
+h1,h2,h3{font-family:'Sora',sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+
+header{background:linear-gradient(135deg,#0B2530 0%,#0E4A5C 55%,#0E7490 100%);color:#fff;padding:26px 0 22px;position:relative;overflow:hidden}
+header::after{content:"🔍";position:absolute;right:-6px;top:-16px;font-size:120px;opacity:.10;transform:rotate(-12deg);pointer-events:none}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:600}
+header h1{font-size:clamp(20px,4vw,29px);margin:6px 0 4px}
+header p{opacity:.9;font-size:14px;max-width:620px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:3px 10px;border-radius:99px;font-size:12px}
+#btnDocente{position:absolute;top:14px;right:16px;z-index:5;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;font-weight:600}
+#btnDocente:hover{background:rgba(255,255,255,.25)}
+
+#barraProgreso{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);padding:10px 0}
+.prog-inner{display:flex;align-items:center;gap:12px}
+.prog-track{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:99px;transition:width .4s}
+.prog-label{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;box-shadow:0 1px 3px rgba(18,49,59,.05)}
+.act-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.act-num{width:38px;height:38px;min-width:38px;border-radius:11px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:700;font-size:15px}
+.act-head h2{font-size:17px}
+.act-sub{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+textarea,input[type=text],input[type=email],input[type=password],input[type=date],select{
+  width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:'Inter';font-size:14.5px;color:var(--ink);background:#FBFDFE;transition:border .15s}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);background:#fff}
+textarea{resize:vertical;min-height:60px}
+.grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0 16px}
+@media(max-width:620px){.grid3{grid-template-columns:1fr}}
+
+/* Ficha 1: trampas */
+.trampa{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px;background:#FBFDFE}
+.trampa .txt{font-size:14.5px;margin-bottom:10px}
+.trampa .num{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--amb);font-weight:700;font-size:13px;margin-right:6px}
+.trampa-campos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:680px){.trampa-campos{grid-template-columns:1fr}}
+.trampa-campos label{margin:0 0 4px;font-size:12.5px;color:var(--muted)}
+
+/* Ficha 2: semáforo */
+.criterio{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.criterio:last-of-type{border-bottom:none}
+.sem-opts{display:flex;gap:6px}
+.sem-opts button{border:1.5px solid var(--line);background:#fff;border-radius:99px;width:64px;padding:5px 0;font-size:12px;cursor:pointer;font-weight:700;color:var(--muted)}
+.sem-opts button.v.sel{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.sem-opts button.a.sel{background:var(--amb-soft);border-color:var(--accent);color:var(--amb)}
+.sem-opts button.r.sel{background:var(--rojo-soft);border-color:var(--rojo);color:var(--rojo)}
+@media(max-width:560px){.criterio{grid-template-columns:1fr}.sem-opts{justify-content:flex-start}}
+.regla-oro{background:var(--accent-soft);border:1px dashed var(--accent);border-radius:10px;padding:10px 14px;font-size:13.5px;color:#92400E;margin-bottom:6px}
+.kit{background:var(--primary-soft);border-radius:10px;padding:10px 14px;font-size:13px;margin-top:14px;color:#0C5B71}
+
+/* Ficha 3: casos */
+.caso{border-radius:0 10px 10px 0;padding:13px 15px;font-size:14px;margin-top:12px}
+.caso.a{background:var(--rojo-soft);border-left:4px solid var(--rojo)}
+.caso.b{background:var(--amb-soft);border-left:4px solid var(--accent)}
+.caso.c{background:var(--primary-soft);border-left:4px solid var(--primary)}
+.caso b{display:block;margin-bottom:3px}
+
+/* Ficha 4: veredictos */
+.veredicto-box{border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+.veredicto-box h3{font-size:15px;color:var(--primary);margin-bottom:8px}
+.ver-opts{display:flex;gap:6px;flex-wrap:wrap}
+.ver-opts button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;font-size:12.5px;cursor:pointer;font-weight:700;color:var(--muted)}
+.ver-opts button.sel{background:var(--primary);border-color:var(--primary);color:#fff}
+.herr{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.herr label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;margin:0;background:#fff}
+.herr label.marcada{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.herr input{accent-color:var(--ok)}
+
+/* Botones y demás */
+.btn{border:none;border-radius:11px;padding:13px 24px;font-family:'Inter';font-weight:700;font-size:15px;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--primary);color:#fff;width:100%}
+.btn-primary:hover{background:#0C637C}
+.btn-primary:disabled{background:#9BB8C1;cursor:not-allowed}
+.btn-sec{background:#fff;border:1.5px solid var(--line);color:var(--ink);font-size:13.5px;padding:8px 14px}
+.btn-sec:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--rojo-soft);color:var(--danger);font-size:13px;padding:7px 12px}
+.aviso-borrador{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(11,37,48,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal-bg.abierto{display:flex}
+.modal{background:#fff;border-radius:16px;padding:26px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin-bottom:4px}
+.modal p{font-size:13.5px;color:var(--muted);margin-bottom:12px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:99px;font-size:14px;font-weight:600;transition:.3s;z-index:200;opacity:0}
+#toast.ver{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Panel docente */
+#vistaDocente{display:none}
+.panel-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+.panel-top h2{font-size:19px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filtros select,.filtros input{width:auto;min-width:140px;padding:8px 10px;font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:14px 0}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat .n{font-family:'Sora';font-size:26px;font-weight:800;color:var(--primary)}
+.stat .l{font-size:12.5px;color:var(--muted);font-weight:600}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line);font-size:14px}
+th{background:var(--primary-soft);color:var(--primary);text-align:left;padding:10px 12px;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+td{padding:10px 12px;border-top:1px solid var(--line)}
+tr.fila:hover{background:#F6FAFB;cursor:pointer}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--amb-soft);color:var(--amb)}
+.tabla-scroll{overflow-x:auto;border-radius:12px}
+#detalle{display:none}
+.det-sec{margin-top:16px}
+.det-sec h3{font-size:15px;color:var(--primary);margin-bottom:8px}
+.det-q{font-size:13px;font-weight:700;color:var(--muted);margin-top:10px}
+.det-a{font-size:14.5px;background:#F6FAFB;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-top:3px;white-space:pre-wrap}
+.det-a.vacia{color:#9AAFB7;font-style:italic}
+.chip-ok{color:var(--ok);font-weight:700}
+.chip-bad{color:var(--danger);font-weight:700}
+.sem-chip{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.sem-chip.verde{background:var(--ok-soft);color:var(--ok)}
+.sem-chip.ambar{background:var(--amb-soft);color:var(--amb)}
+.sem-chip.rojo{background:var(--rojo-soft);color:var(--rojo)}
+footer{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 0 10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Aula de Innovación Pedagógica · Taller de cultura digital</div>
+    <h1>Fact-Checkers: Detectives de la verdad digital 🕵️</h1>
+    <p>Aprende a detectar noticias falsas, verifica con el semáforo y resuelve los casos del reto en equipo.</p>
+    <div class="badges">
+      <span class="badge">Competencia 28 · Cultura Digital</span><span class="badge">3.° Secundaria</span><span class="badge">Trabajo en parejas / equipos</span>
+    </div>
+  </div>
+  <button id="btnDocente" onclick="abrirLoginDocente()">👨‍🏫 Docente</button>
+</header>
+
+<!-- ================= VISTA ESTUDIANTE ================= -->
+<div id="vistaEstudiante">
+
+<div id="barraProgreso">
+  <div class="wrap prog-inner">
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-label" id="progLabel">0% completado</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Datos -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">👥</div><h2>Datos del equipo</h2></div>
+    <div class="grid3">
+      <div><label>Integrantes (apellidos y nombres)</label><input type="text" id="f_equipo" placeholder="Ej.: Quispe Rojas, Ana / Torres Díaz, Luis"></div>
+      <div><label>Grado y sección</label>
+        <select id="f_seccion">
+          <option value="">Selecciona…</option>
+          <option>3° A</option><option>3° B</option><option>3° C</option><option>3° D</option><option>3° E</option><option>3° F</option>
+        </select>
+      </div>
+      <div><label>Fecha</label><input type="date" id="f_fecha"></div>
+    </div>
+  </div>
+
+  <!-- FICHA 1 -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">1</div><h2>Clasifica la trampa</h2></div>
+    <div class="act-sub">En parejas: lean cada ejemplo y clasifíquenlo. <b>Tipos:</b> ERRÓNEA (falsa, sin intención de dañar) · DESINFORMACIÓN (creada para engañar) · MALICIOSA (información real usada para dañar).</div>
+    <div id="trampas"></div>
+  </div>
+
+  <!-- FICHA 2 -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">2</div><h2>Semáforo de Verificación</h2></div>
+    <div class="regla-oro">⭐ <b>Regla de oro:</b> si la mayoría está en ÁMBAR o ROJO… ¡no compartas!</div>
+    <label>Contenido que estoy verificando</label>
+    <input type="text" id="f2_contenido" data-track placeholder="Describe la noticia, imagen o mensaje que verificas…">
+    <div id="criterios" style="margin-top:8px"></div>
+    <label style="margin-top:16px">🚦 Mi semáforo final</label>
+    <div class="ver-opts" id="semFinal">
+      <button data-v="verde" onclick="setSemFinal(this)">🟢 VERDE — Confiable</button>
+      <button data-v="ambar" onclick="setSemFinal(this)">🟡 ÁMBAR — Dudoso, no comparto</button>
+      <button data-v="rojo" onclick="setSemFinal(this)">🔴 ROJO — Falso o engañoso</button>
+    </div>
+    <div class="kit">🧰 <b>Kit del detective:</b> lectura lateral · fuente, autor y fecha · búsqueda inversa (Google Lens / TinEye) · verificadores peruanos (OjoBiónico, Verificador de La República, PerúCheck).</div>
+  </div>
+
+  <!-- FICHA 3 -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">3</div><h2>Casos del Reto Fact-Checker</h2></div>
+    <div class="act-sub">Analicen los 3 casos con el Semáforo de Verificación. El veredicto de cada caso lo registrarán en la Ficha 4.</div>
+    <div class="caso a"><b>CASO A — Noticia web</b>Titular: «URGENTE: Ministerio confirma que el próximo año escolar empezará recién en mayo». Publicado en «noticias-peru-hoy24.com», sin autor, con fecha de hace 3 años y varios errores ortográficos. Pide compartir «antes de que lo borren».</div>
+    <div class="caso b"><b>CASO B — Cadena de WhatsApp</b>«AVISO!! Están regalando becas completas de estudio, solo ingresa tus datos y tu DNI en: beca-gratis-2026.xyz. Cupos limitados, reenvía a 10 contactos».</div>
+    <div class="caso c"><b>CASO C — Imagen viral</b>Fotografía impactante de una inundación con el texto «Así quedó Lima ANOCHE». La búsqueda inversa muestra que la foto es de hace varios años… y de otro país.</div>
+    <label>¿Qué criterios del semáforo fallan en cada caso?</label>
+    <textarea id="f3_q1" data-track></textarea>
+    <label>¿Qué herramienta fue clave para descubrirlo?</label>
+    <textarea id="f3_q2" data-track></textarea>
+    <label>¿Qué emoción buscaba provocar el contenido y para qué?</label>
+    <textarea id="f3_q3" data-track></textarea>
+    <label>¿Qué podría pasar si mil personas lo comparten sin verificar?</label>
+    <textarea id="f3_q4" data-track></textarea>
+  </div>
+
+  <!-- FICHA 4 -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">4</div><h2>Veredicto del equipo</h2></div>
+    <div class="act-sub">Completen el veredicto de cada caso con sus evidencias y las herramientas que usaron.</div>
+    <div id="veredictos"></div>
+  </div>
+
+  <!-- FICHA 5 -->
+  <div class="card">
+    <div class="act-head"><div class="act-num">5</div><h2>Metacognición y compromiso digital</h2></div>
+    <label>1. ¿Qué aprendí hoy sobre la desinformación?</label>
+    <textarea id="f5_q1" data-track></textarea>
+    <label>2. ¿Qué herramienta de verificación me pareció más útil y por qué?</label>
+    <textarea id="f5_q2" data-track></textarea>
+    <label>3. ¿Qué me resultó difícil y cómo lo resolví?</label>
+    <textarea id="f5_q3" data-track></textarea>
+    <label>4. ¿Qué haré diferente antes de compartir contenido en mis redes o en WhatsApp?</label>
+    <textarea id="f5_q4" data-track></textarea>
+    <label>✍️ MI COMPROMISO DIGITAL — Desde hoy, antes de compartir, yo me comprometo a:</label>
+    <textarea id="f5_compromiso" data-track></textarea>
+    <div class="kit">🕵️ <b>Los 5 pasos del fact-checker:</b> 1) DETENTE · 2) REVISA la fuente · 3) COMPARA en otros medios · 4) VERIFICA imágenes y fechas · 5) CONSULTA verificadores.</div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#0B2530,#0E7490);border:none">
+    <button class="btn btn-primary" id="btnEnviar" style="background:#fff;color:var(--primary)" onclick="enviarFicha()">📤 Enviar nuestras fichas</button>
+    <div class="aviso-borrador" style="color:rgba(255,255,255,.85)">Las respuestas se guardan automáticamente como borrador en este equipo. Solo se envían al docente al presionar el botón.</div>
+  </div>
+</div>
+</div>
+
+<!-- ================= VISTA DOCENTE ================= -->
+<div id="vistaDocente">
+<div class="wrap">
+  <div class="panel-top">
+    <h2>📊 Panel del docente — Fact-Checkers</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sec" onclick="exportarExcel()">⬇️ Exportar Excel</button>
+      <button class="btn btn-sec" onclick="cerrarSesionDocente()">Salir</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Equipos recibidos</div></div>
+    <div class="stat"><div class="n" id="stHoy">0</div><div class="l">Enviados hoy</div></div>
+  </div>
+
+  <div class="filtros">
+    <select id="filtroSeccion" onchange="renderTabla()"><option value="">Todas las secciones</option></select>
+    <input type="text" id="filtroNombre" placeholder="Buscar equipo…" oninput="renderTabla()">
+    <button class="btn btn-sec" onclick="cargarFichas()">🔄 Actualizar</button>
+  </div>
+
+  <div class="tabla-scroll">
+  <table>
+    <thead><tr><th>Equipo</th><th>Sección</th><th>Enviado</th><th>F1: Tipos</th><th>F4: Veredictos</th><th>Nota</th><th></th></tr></thead>
+    <tbody id="tbodyFichas"><tr><td colspan="7" style="text-align:center;color:var(--muted)">Cargando…</td></tr></tbody>
+  </table>
+  </div>
+
+  <div id="detalle" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <h2 id="detNombre" style="font-size:18px"></h2>
+      <button class="btn btn-sec" onclick="document.getElementById('detalle').style.display='none'">✕ Cerrar</button>
+    </div>
+    <div id="detBody"></div>
+  </div>
+</div>
+</div>
+
+<!-- Modal login docente -->
+<div class="modal-bg" id="modalLogin">
+  <div class="modal">
+    <h3>Acceso docente</h3>
+    <p>Ingresa con tu cuenta autorizada para ver las fichas de los equipos.</p>
+    <label>Correo</label><input type="email" id="logEmail" autocomplete="username">
+    <label>Contraseña</label><input type="password" id="logPass" autocomplete="current-password">
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" style="flex:1" onclick="loginDocente()">Ingresar</button>
+      <button class="btn btn-sec" onclick="document.getElementById('modalLogin').classList.remove('abierto')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de nota instantánea -->
+<div class="modal-bg" id="modalNota">
+  <div class="modal" style="text-align:center;max-width:430px">
+    <div style="font-size:14px;color:var(--muted);font-weight:600">🕵️ Resultado del equipo</div>
+    <div id="notaLetra" style="font-family:'Sora';font-size:64px;font-weight:800;line-height:1.1;margin:8px 0 2px"></div>
+    <div id="notaDesc" style="font-family:'Sora';font-size:16px;font-weight:700;margin-bottom:14px"></div>
+    <div id="notaDetalle" style="text-align:left;font-size:14px"></div>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="document.getElementById('modalNota').classList.remove('abierto')">Entendido</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<footer>IE N° 0148 · Aula de Innovación Pedagógica · Taller Fact-Checkers</footer>
+
+<script>
+/* ============ CONFIGURACIÓN FIREBASE ============ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDdMTM-iHQmXeyPWc2hM7Pat-VCgZD7Gv4",
+  authDomain: "practica-2994b.firebaseapp.com",
+  projectId: "practica-2994b",
+  storageBucket: "practica-2994b.firebasestorage.app",
+  messagingSenderId: "460468749158",
+  appId: "1:460468749158:web:c9aca33d5b348fac11bea7"
+};
+const COLECCION = "fichas_factcheckers";
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+/* ============ DATOS DEL TALLER ============ */
+const TIPOS = ["ERRÓNEA","DESINFORMACIÓN","MALICIOSA"];
+const EMOCIONES = ["miedo","indignación","curiosidad","burla","codicia"];
+const TRAMPAS = [
+  {t:"Cadena reenviada: «¡Cuidado! El eclipse de mañana daña la cámara y la batería de tu celular si sales a la calle. ¡Avisa a todos!».", ok:["ERRÓNEA"]},
+  {t:"Un sitio web con diseño idéntico al de un diario conocido, pero con dominio «.info-noticias.xyz», publica una encuesta política inventada.", ok:["DESINFORMACIÓN"]},
+  {t:"Un estudiante difunde la captura editada de un chat privado de un compañero para burlarse de él en un grupo.", ok:["MALICIOSA"]},
+  {t:"Titular: «No creerás lo que encontró este pescador cuando abrió la caja… el final te sorprenderá».", ok:["DESINFORMACIÓN"]},
+  {t:"Foto real de una marcha multitudinaria de hace 5 años, compartida como si fuera «la marcha de ayer en el centro de Lima».", ok:["DESINFORMACIÓN","MALICIOSA"]},
+  {t:"Video donde la voz clonada de un famoso «recomienda» una casa de apuestas y asegura que «todos están ganando dinero fácil».", ok:["DESINFORMACIÓN"]},
+];
+const CRITERIOS = [
+  "¿La fuente es un medio o institución reconocida?",
+  "¿Tiene autor identificable?",
+  "¿La fecha es actual y coherente con el contenido?",
+  "¿Otros medios confiables informan lo mismo? (lectura lateral)",
+  "¿La imagen corresponde al hecho? (búsqueda inversa)",
+  "¿El lenguaje es neutral? (sin «URGENTE!!», sin pedir reenvíos)",
+  "¿Un verificador ya lo revisó? ¿Qué concluyó?",
+];
+const CASOS = ["A","B","C"];
+const VEREDICTOS = ["VERDADERO","FALSO","ENGAÑOSO / FUERA DE CONTEXTO"];
+const VER_OK = {A:["FALSO","ENGAÑOSO / FUERA DE CONTEXTO"], B:["FALSO"], C:["ENGAÑOSO / FUERA DE CONTEXTO"]};
+const HERRAMIENTAS = ["Lectura lateral","Búsqueda inversa","Verificadores","Fuente/autor/fecha"];
+
+/* ============ RENDER DINÁMICO ============ */
+const $ = id => document.getElementById(id);
+
+// Ficha 1
+const contT = $("trampas");
+TRAMPAS.forEach((tr,i)=>{
+  const div = document.createElement("div");
+  div.className = "trampa";
+  div.innerHTML = `<div class="txt"><span class="num">${i+1}</span>${tr.t}</div>
+    <div class="trampa-campos">
+      <div><label>Tipo</label><select id="f1_tipo${i}" data-track><option value="">Selecciona…</option>${TIPOS.map(t=>`<option>${t}</option>`).join("")}</select></div>
+      <div><label>Formato o disfraz que usa</label><input type="text" id="f1_dis${i}" data-track placeholder="Ej.: cadena, web falsa, video…"></div>
+      <div><label>Emoción que provoca</label><select id="f1_emo${i}" data-track><option value="">Selecciona…</option>${EMOCIONES.map(e=>`<option>${e}</option>`).join("")}</select></div>
+    </div>`;
+  contT.appendChild(div);
+});
+
+// Ficha 2: criterios
+const contC = $("criterios");
+const semResp = {};
+CRITERIOS.forEach((c,i)=>{
+  const div = document.createElement("div");
+  div.className = "criterio";
+  div.innerHTML = `<span>${c}</span>
+    <div class="sem-opts">
+      <button class="v" onclick="setSem(${i},'verde',this)">VERDE</button>
+      <button class="a" onclick="setSem(${i},'ambar',this)">ÁMBAR</button>
+      <button class="r" onclick="setSem(${i},'rojo',this)">ROJO</button>
+    </div>`;
+  contC.appendChild(div);
+});
+function setSem(i, v, btn){
+  semResp[i] = v;
+  btn.parentElement.querySelectorAll("button").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+  guardarBorrador(); actualizarProgreso();
+}
+let semFinal = "";
+function setSemFinal(btn){
+  semFinal = btn.dataset.v;
+  $("semFinal").querySelectorAll("button").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+  guardarBorrador(); actualizarProgreso();
+}
+
+// Ficha 4: veredictos
+const contV = $("veredictos");
+const verResp = {};
+CASOS.forEach(c=>{
+  const div = document.createElement("div");
+  div.className = "veredicto-box";
+  div.innerHTML = `<h3>CASO ${c}</h3>
+    <label style="margin-top:0">Veredicto</label>
+    <div class="ver-opts" id="f4_ver_${c}">${VEREDICTOS.map(v=>`<button onclick="setVer('${c}','${v.replace(/'/g,"\\'")}',this)">${v}</button>`).join("")}</div>
+    <label>Evidencia 1</label><input type="text" id="f4_e1_${c}" data-track>
+    <label>Evidencia 2</label><input type="text" id="f4_e2_${c}" data-track>
+    <label>Herramientas usadas</label>
+    <div class="herr">${HERRAMIENTAS.map((h,j)=>`<label id="f4_hl_${c}${j}"><input type="checkbox" id="f4_h_${c}${j}" data-track>${h}</label>`).join("")}</div>`;
+  contV.appendChild(div);
+  HERRAMIENTAS.forEach((h,j)=>{
+    setTimeout(()=>{
+      $("f4_h_"+c+j).addEventListener("change", e=>{
+        $("f4_hl_"+c+j).classList.toggle("marcada", e.target.checked);
+      });
+    },0);
+  });
+});
+function setVer(caso, v, btn){
+  verResp[caso] = v;
+  btn.parentElement.querySelectorAll("button").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+  guardarBorrador(); actualizarProgreso();
+}
+
+// Fecha por defecto (hora Perú)
+$("f_fecha").value = new Date(Date.now() - 5*3600*1000).toISOString().slice(0,10);
+
+/* ============ BORRADOR + PROGRESO ============ */
+const CLAVE_BORRADOR = "borrador_factcheckers_v1";
+const camposTexto = ()=>[...document.querySelectorAll("[data-track]")];
+
+function guardarBorrador(){
+  const data = {campos:{}, sem:semResp, semFinal, ver:verResp, equipo:$("f_equipo").value, seccion:$("f_seccion").value, fecha:$("f_fecha").value};
+  camposTexto().forEach(el=>{ data.campos[el.id] = el.type==="checkbox" ? el.checked : el.value; });
+  localStorage.setItem(CLAVE_BORRADOR, JSON.stringify(data));
+}
+function cargarBorrador(){
+  try{
+    const raw = localStorage.getItem(CLAVE_BORRADOR); if(!raw) return;
+    const d = JSON.parse(raw);
+    $("f_equipo").value = d.equipo||""; $("f_seccion").value = d.seccion||""; if(d.fecha) $("f_fecha").value = d.fecha;
+    Object.entries(d.campos||{}).forEach(([id,v])=>{
+      const el = $(id); if(!el) return;
+      if(el.type==="checkbox"){ el.checked = v; if(v){ const lab = $(id.replace("f4_h_","f4_hl_")); lab?.classList.add("marcada"); } }
+      else el.value = v;
+    });
+    Object.entries(d.sem||{}).forEach(([i,v])=>{
+      semResp[i]=v;
+      const fila = contC.children[i];
+      fila?.querySelector("."+v[0])?.classList.add("sel");
+    });
+    if(d.semFinal){
+      semFinal = d.semFinal;
+      $("semFinal").querySelector(`[data-v="${d.semFinal}"]`)?.classList.add("sel");
+    }
+    Object.entries(d.ver||{}).forEach(([c,v])=>{
+      verResp[c]=v;
+      [...$("f4_ver_"+c).querySelectorAll("button")].find(b=>b.textContent===v)?.classList.add("sel");
+    });
+  }catch(e){}
+}
+document.addEventListener("input", e=>{
+  if(e.target.matches("[data-track], #f_equipo, #f_seccion, #f_fecha")){ guardarBorrador(); actualizarProgreso(); }
+});
+document.addEventListener("change", e=>{
+  if(e.target.matches("[data-track], #f_equipo, #f_seccion, #f_fecha")){ guardarBorrador(); actualizarProgreso(); }
+});
+
+function actualizarProgreso(){
+  const textos = camposTexto().filter(el=>el.type!=="checkbox");
+  const llenos = textos.filter(el=>el.value.trim()!=="").length;
+  const total = textos.length + CRITERIOS.length + 1 + CASOS.length + 2; // + criterios + semFinal + veredictos + equipo/sección
+  let n = llenos + Object.keys(semResp).length + (semFinal?1:0) + Object.keys(verResp).length;
+  if($("f_equipo").value.trim()) n++;
+  if($("f_seccion").value) n++;
+  const pct = Math.min(100, Math.round(n/total*100));
+  $("progFill").style.width = pct+"%";
+  $("progLabel").textContent = pct+"% completado";
+}
+cargarBorrador(); actualizarProgreso();
+
+/* ============ CÁLCULO DE NOTA (AD / A / B / C) ============ */
+const NOTAS = {
+  AD: {desc:"Logro destacado", color:"#0E7490", msg:"¡Excelente trabajo, detectives! Dominan la verificación de información."},
+  A:  {desc:"Logro esperado", color:"#15803D", msg:"¡Muy bien! Lograron lo esperado. Revisen los puntos marcados para llegar a AD."},
+  B:  {desc:"En proceso", color:"#B45309", msg:"Van por buen camino, pero hay respuestas por mejorar o completar."},
+  C:  {desc:"En inicio", color:"#B91C1C", msg:"Necesitan reforzar el tema. Revisen el kit del detective y vuelvan a intentarlo."},
+};
+function calcNota(f){
+  // Aciertos en las partes autocorregibles (F1 tipos + F4 veredictos)
+  let aciertos1 = 0;
+  TRAMPAS.forEach((tr,i)=>{ if(tr.ok.includes(f.f1?.[i]?.tipo||"")) aciertos1++; });
+  let aciertos4 = 0;
+  CASOS.forEach(c=>{ if(VER_OK[c].includes(f.f4?.[c]?.veredicto||"")) aciertos4++; });
+  const aciertos = aciertos1 + aciertos4;
+  const totalAciertos = TRAMPAS.length + CASOS.length; // 9
+
+  // Completitud de todo lo demás
+  let llenos = 0, total = 0;
+  const cuenta = v => { total++; if(v && String(v).trim()!=="") llenos++; };
+  (f.f1||[]).forEach(r=>{ cuenta(r.tipo); cuenta(r.disfraz); cuenta(r.emocion); });
+  cuenta(f.f2?.contenido);
+  (f.f2?.criterios||[]).forEach(c=>cuenta(c));
+  cuenta(f.f2?.final);
+  ["q1","q2","q3","q4"].forEach(k=>cuenta(f.f3?.[k]));
+  CASOS.forEach(c=>{ const r=f.f4?.[c]||{}; cuenta(r.veredicto); cuenta(r.e1); cuenta(r.e2); });
+  ["q1","q2","q3","q4","compromiso"].forEach(k=>cuenta(f.f5?.[k]));
+  const completitud = total ? llenos/total : 0;
+
+  // Puntaje final: 60% aciertos + 40% completitud
+  const puntaje = Math.round((aciertos/totalAciertos)*60 + completitud*40);
+  let letra = "C";
+  if(puntaje >= 90) letra = "AD";
+  else if(puntaje >= 70) letra = "A";
+  else if(puntaje >= 50) letra = "B";
+  return {letra, puntaje, aciertos1, aciertos4, completitud: Math.round(completitud*100)};
+}
+function mostrarNota(n){
+  const info = NOTAS[n.letra];
+  $("notaLetra").textContent = n.letra;
+  $("notaLetra").style.color = info.color;
+  $("notaDesc").textContent = info.desc;
+  $("notaDesc").style.color = info.color;
+  $("notaDetalle").innerHTML = `
+    <div class="det-a" style="margin-top:4px">🎯 Ficha 1 — Tipos correctos: <b>${n.aciertos1}/${TRAMPAS.length}</b></div>
+    <div class="det-a" style="margin-top:6px">⚖️ Ficha 4 — Veredictos correctos: <b>${n.aciertos4}/${CASOS.length}</b></div>
+    <div class="det-a" style="margin-top:6px">📝 Completitud de las fichas: <b>${n.completitud}%</b></div>
+    <div class="det-a" style="margin-top:6px">🏁 Puntaje final: <b>${n.puntaje}/100</b></div>
+    <div style="font-size:13px;color:var(--muted);margin-top:10px">${info.msg}</div>`;
+  $("modalNota").classList.add("abierto");
+}
+
+/* ============ ENVÍO ============ */
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("ver");
+  setTimeout(()=>t.classList.remove("ver"), 3200);
+}
+
+async function enviarFicha(){
+  const equipo = $("f_equipo").value.trim();
+  const seccion = $("f_seccion").value;
+  if(!equipo || !seccion){ toast("⚠️ Escriban los integrantes y elijan su sección"); window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+  const btn = $("btnEnviar");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  try{
+    if(!auth.currentUser) await auth.signInAnonymously();
+    const ficha = {
+      equipo, seccion,
+      fecha: $("f_fecha").value,
+      enviado: firebase.firestore.FieldValue.serverTimestamp(),
+      f1: TRAMPAS.map((tr,i)=>({tipo:$("f1_tipo"+i).value, disfraz:$("f1_dis"+i).value, emocion:$("f1_emo"+i).value})),
+      f2: {contenido:$("f2_contenido").value, criterios:CRITERIOS.map((c,i)=>semResp[i]||""), final:semFinal},
+      f3: {q1:$("f3_q1").value, q2:$("f3_q2").value, q3:$("f3_q3").value, q4:$("f3_q4").value},
+      f4: Object.fromEntries(CASOS.map(c=>[c,{
+        veredicto: verResp[c]||"",
+        e1:$("f4_e1_"+c).value, e2:$("f4_e2_"+c).value,
+        herramientas: HERRAMIENTAS.map((h,j)=>$("f4_h_"+c+j).checked),
+      }])),
+      f5: {q1:$("f5_q1").value, q2:$("f5_q2").value, q3:$("f5_q3").value, q4:$("f5_q4").value, compromiso:$("f5_compromiso").value},
+    };
+    const nota = calcNota(ficha);
+    ficha.nota = nota;
+    await db.collection(COLECCION).add(ficha);
+    btn.textContent = "✅ Enviadas correctamente";
+    mostrarNota(nota);
+  }catch(err){
+    console.error(err);
+    let msg = "❌ Error al enviar. Verifica tu conexión e intenta de nuevo.";
+    const code = (err && (err.code || err.message)) || "";
+    if(code.includes("admin-restricted-operation") || code.includes("operation-not-allowed")) msg = "❌ Falta habilitar el acceso ANÓNIMO en Firebase Authentication.";
+    else if(code.includes("permission-denied") || code.includes("Missing or insufficient")) msg = "❌ Las reglas de Firestore no permiten crear. Revisa las reglas.";
+    else if(code.includes("not-found") || code.includes("NOT_FOUND")) msg = "❌ La base de datos Firestore aún no fue creada en el proyecto.";
+    else if(code.includes("unavailable") || code.includes("network")) msg = "❌ Sin conexión a internet. Intenta de nuevo.";
+    toast(msg);
+    alert(msg + "\n\nDetalle técnico: " + code);
+    btn.disabled = false; btn.textContent = "📤 Enviar nuestras fichas";
+  }
+}
+
+/* ============ PANEL DOCENTE ============ */
+let fichas = [];
+
+function abrirLoginDocente(){
+  if(auth.currentUser && !auth.currentUser.isAnonymous){ mostrarPanel(); return; }
+  $("modalLogin").classList.add("abierto");
+}
+async function loginDocente(){
+  const email = $("logEmail").value.trim(), pass = $("logPass").value;
+  if(!email || !pass){ toast("⚠️ Escribe correo y contraseña"); return; }
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+    $("modalLogin").classList.remove("abierto");
+    mostrarPanel();
+  }catch(e){
+    console.error(e);
+    const code = (e && e.code) || "";
+    let msg = "❌ No se pudo iniciar sesión.";
+    if(code.includes("operation-not-allowed")) msg = "❌ Falta habilitar Correo/contraseña en Authentication.";
+    else if(code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) msg = "❌ Correo o contraseña incorrectos.";
+    else if(code.includes("invalid-email")) msg = "❌ El correo no tiene formato válido.";
+    else if(code.includes("too-many-requests")) msg = "❌ Demasiados intentos. Espera unos minutos.";
+    else if(code.includes("network")) msg = "❌ Sin conexión a internet.";
+    toast(msg);
+    alert(msg + "\n\nDetalle técnico: " + code);
+  }
+}
+["logEmail","logPass"].forEach(id=>{
+  $(id).addEventListener("keydown", e=>{ if(e.key==="Enter") loginDocente(); });
+});
+function cerrarSesionDocente(){
+  auth.signOut();
+  $("vistaDocente").style.display = "none";
+  $("vistaEstudiante").style.display = "block";
+}
+function mostrarPanel(){
+  $("vistaEstudiante").style.display = "none";
+  $("vistaDocente").style.display = "block";
+  cargarFichas();
+}
+
+async function cargarFichas(){
+  $("tbodyFichas").innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted)">Cargando…</td></tr>`;
+  try{
+    const snap = await db.collection(COLECCION).orderBy("enviado","desc").get();
+    fichas = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const secciones = [...new Set(fichas.map(f=>f.seccion))].sort();
+    $("filtroSeccion").innerHTML = `<option value="">Todas las secciones</option>` + secciones.map(s=>`<option>${s}</option>`).join("");
+    renderTabla();
+  }catch(e){
+    console.error(e);
+    $("tbodyFichas").innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger)">Sin permiso para leer. Verifica las reglas de Firestore y tu sesión de docente.</td></tr>`;
+  }
+}
+
+function escHTML(v){ return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function puntajeF1(f){
+  let ok = 0;
+  TRAMPAS.forEach((tr,i)=>{ if(tr.ok.includes(f.f1?.[i]?.tipo||"")) ok++; });
+  return ok + "/" + TRAMPAS.length;
+}
+function puntajeF4(f){
+  let ok = 0;
+  CASOS.forEach(c=>{ if(VER_OK[c].includes(f.f4?.[c]?.veredicto||"")) ok++; });
+  return ok + "/" + CASOS.length;
+}
+function notaDe(f){ return f.nota && f.nota.letra ? f.nota : calcNota(f); }
+function pillNota(n){
+  const info = NOTAS[n.letra];
+  return `<span class="pill" style="background:${info.color}1A;color:${info.color}">${n.letra} · ${n.puntaje}</span>`;
+}
+function fmtFecha(ts){
+  if(!ts?.toDate) return "—";
+  return ts.toDate().toLocaleString("es-PE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+}
+
+function renderTabla(){
+  const fs = $("filtroSeccion").value;
+  const fn = $("filtroNombre").value.trim().toLowerCase();
+  const lista = fichas.filter(f => (!fs || f.seccion===fs) && (!fn || (f.equipo||"").toLowerCase().includes(fn)));
+
+  $("stTotal").textContent = fichas.length;
+  const hoy = new Date().toDateString();
+  $("stHoy").textContent = fichas.filter(f=>f.enviado?.toDate && f.enviado.toDate().toDateString()===hoy).length;
+
+  if(!lista.length){
+    $("tbodyFichas").innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted)">No hay fichas para mostrar.</td></tr>`;
+    return;
+  }
+  $("tbodyFichas").innerHTML = lista.map(f=>`
+    <tr class="fila" onclick="verDetalle('${f.id}')">
+      <td><b>${escHTML(f.equipo)||"—"}</b></td>
+      <td>${escHTML(f.seccion)||"—"}</td>
+      <td>${fmtFecha(f.enviado)}</td>
+      <td><span class="pill ok">${puntajeF1(f)}</span></td>
+      <td><span class="pill ok">${puntajeF4(f)}</span></td>
+      <td>${pillNota(notaDe(f))}</td>
+      <td><button class="btn btn-danger" onclick="event.stopPropagation();borrarFicha('${f.id}')">🗑</button></td>
+    </tr>`).join("");
+}
+
+function esc(v){ return (v&&v.trim()) ? escHTML(v) : null; }
+function bloqueA(q, v){
+  return `<div class="det-q">${q}</div><div class="det-a ${v?"":"vacia"}">${v||"Sin respuesta"}</div>`;
+}
+function semChip(v){
+  if(v==="verde") return `<span class="sem-chip verde">🟢 VERDE</span>`;
+  if(v==="ambar") return `<span class="sem-chip ambar">🟡 ÁMBAR</span>`;
+  if(v==="rojo") return `<span class="sem-chip rojo">🔴 ROJO</span>`;
+  return `<span class="sem-chip">sin marcar</span>`;
+}
+
+function verDetalle(id){
+  const f = fichas.find(x=>x.id===id); if(!f) return;
+  const nd = notaDe(f);
+  $("detNombre").innerHTML = `${escHTML(f.equipo)} · ${escHTML(f.seccion)} &nbsp; ${pillNota(nd)} <span style="font-size:13px;color:var(--muted);font-weight:400">(${NOTAS[nd.letra].desc} · completitud ${nd.completitud}%)</span>`;
+  let h = "";
+
+  h += `<div class="det-sec"><h3>1️⃣ Clasifica la trampa <span class="pill ok">${puntajeF1(f)}</span></h3>`;
+  TRAMPAS.forEach((tr,i)=>{
+    const r = f.f1?.[i]||{};
+    const ok = tr.ok.includes(r.tipo||"");
+    h += `<div class="det-a" style="margin-top:6px"><b>${i+1}.</b> ${escHTML(r.tipo)||"<i>sin tipo</i>"} <span class="${ok?"chip-ok":"chip-bad"}">${ok?"✓":"✗ ("+tr.ok.join(" o ")+")"}</span><br>
+      <small>Disfraz: ${esc(r.disfraz)||"—"} · Emoción: ${escHTML(r.emocion)||"—"}</small></div>`;
+  });
+  h += `</div>`;
+
+  h += `<div class="det-sec"><h3>2️⃣ Semáforo de Verificación</h3>
+    ${bloqueA("Contenido verificado", esc(f.f2?.contenido))}`;
+  CRITERIOS.forEach((c,i)=>{
+    h += `<div class="det-a" style="margin-top:6px">${c} ${semChip(f.f2?.criterios?.[i])}</div>`;
+  });
+  h += `<div class="det-a" style="margin-top:6px"><b>Semáforo final:</b> ${semChip(f.f2?.final)}</div></div>`;
+
+  h += `<div class="det-sec"><h3>3️⃣ Análisis de los casos</h3>
+    ${bloqueA("Criterios que fallan en cada caso", esc(f.f3?.q1))}
+    ${bloqueA("Herramienta clave", esc(f.f3?.q2))}
+    ${bloqueA("Emoción que buscaba provocar", esc(f.f3?.q3))}
+    ${bloqueA("¿Qué pasaría si mil personas lo comparten?", esc(f.f3?.q4))}</div>`;
+
+  h += `<div class="det-sec"><h3>4️⃣ Veredictos <span class="pill ok">${puntajeF4(f)}</span></h3>`;
+  CASOS.forEach(c=>{
+    const r = f.f4?.[c]||{};
+    const ok = VER_OK[c].includes(r.veredicto||"");
+    const herr = HERRAMIENTAS.filter((hh,j)=>r.herramientas?.[j]).join(", ");
+    h += `<div class="det-a" style="margin-top:6px"><b>CASO ${c}:</b> ${escHTML(r.veredicto)||"<i>sin veredicto</i>"} <span class="${ok?"chip-ok":"chip-bad"}">${ok?"✓":"✗ ("+VER_OK[c].join(" o ")+")"}</span><br>
+      <small>Evidencia 1: ${esc(r.e1)||"—"}<br>Evidencia 2: ${esc(r.e2)||"—"}<br>Herramientas: ${herr||"—"}</small></div>`;
+  });
+  h += `</div>`;
+
+  h += `<div class="det-sec"><h3>5️⃣ Metacognición y compromiso</h3>
+    ${bloqueA("Qué aprendió sobre la desinformación", esc(f.f5?.q1))}
+    ${bloqueA("Herramienta más útil y por qué", esc(f.f5?.q2))}
+    ${bloqueA("Qué le resultó difícil y cómo lo resolvió", esc(f.f5?.q3))}
+    ${bloqueA("Qué hará diferente antes de compartir", esc(f.f5?.q4))}
+    ${bloqueA("✍️ Compromiso digital", esc(f.f5?.compromiso))}</div>`;
+
+  $("detBody").innerHTML = h;
+  $("detalle").style.display = "block";
+  $("detalle").scrollIntoView({behavior:"smooth"});
+}
+
+async function borrarFicha(id){
+  if(!confirm("¿Eliminar esta ficha de equipo? Esta acción no se puede deshacer.")) return;
+  try{
+    await db.collection(COLECCION).doc(id).delete();
+    fichas = fichas.filter(f=>f.id!==id);
+    renderTabla();
+    toast("Ficha eliminada");
+  }catch(e){ toast("❌ No se pudo eliminar"); }
+}
+
+/* ============ EXPORTAR EXCEL ============ */
+function exportarExcel(){
+  if(!fichas.length){ toast("No hay fichas para exportar"); return; }
+  const filas = fichas.map(f=>{
+    const fila = {
+      "Equipo": f.equipo, "Sección": f.seccion, "Fecha": f.fecha,
+      "Enviado": f.enviado?.toDate ? f.enviado.toDate().toLocaleString("es-PE") : "",
+      "F1: Puntaje tipos": puntajeF1(f),
+    };
+    TRAMPAS.forEach((tr,i)=>{
+      const r = f.f1?.[i]||{};
+      fila[`F1.${i+1} Tipo`] = r.tipo||""; fila[`F1.${i+1} Disfraz`] = r.disfraz||""; fila[`F1.${i+1} Emoción`] = r.emocion||"";
+    });
+    fila["F2: Contenido verificado"] = f.f2?.contenido||"";
+    fila["F2: Criterios (7)"] = (f.f2?.criterios||[]).join(" | ");
+    fila["F2: Semáforo final"] = f.f2?.final||"";
+    fila["F3: Criterios que fallan"] = f.f3?.q1||""; fila["F3: Herramienta clave"] = f.f3?.q2||"";
+    fila["F3: Emoción"] = f.f3?.q3||""; fila["F3: Efecto de compartir"] = f.f3?.q4||"";
+    CASOS.forEach(c=>{
+      const r = f.f4?.[c]||{};
+      fila[`F4.${c} Veredicto`] = r.veredicto||"";
+      fila[`F4.${c} Evidencias`] = [r.e1,r.e2].filter(Boolean).join(" | ");
+      fila[`F4.${c} Herramientas`] = HERRAMIENTAS.filter((hh,j)=>r.herramientas?.[j]).join(", ");
+    });
+    fila["F4: Puntaje veredictos"] = puntajeF4(f);
+    const nd = notaDe(f);
+    fila["Nota (AD/A/B/C)"] = nd.letra; fila["Puntaje /100"] = nd.puntaje; fila["Completitud %"] = nd.completitud;
+    fila["F5: Aprendizaje"] = f.f5?.q1||""; fila["F5: Herramienta útil"] = f.f5?.q2||"";
+    fila["F5: Dificultad"] = f.f5?.q3||""; fila["F5: Qué hará diferente"] = f.f5?.q4||"";
+    fila["F5: Compromiso"] = f.f5?.compromiso||"";
+    return fila;
+  });
+  const ws = XLSX.utils.json_to_sheet(filas);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "FactCheckers");
+  XLSX.writeFile(wb, "fichas_factcheckers_3ro.xlsx");
+}
+</script>
+</body>
+</html>
